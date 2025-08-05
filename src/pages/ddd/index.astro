@@ -1,19 +1,43 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+import CategoryCard from "../../components/CategoryCard.astro";
 
 // Get all DDD entries
-const dddEntries = await getCollection('ddd');
+const dddEntries = await getCollection("ddd");
 
 // Group entries by category
-const basicEntries = dddEntries.filter(entry => entry.data.category === 'basic')
-  .sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
-const strategicEntries = dddEntries.filter(entry => entry.data.category === 'strategic')
-  .sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
-const tacticalEntries = dddEntries.filter(entry => entry.data.category === 'tactical')
-  .sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
-const uncategorizedEntries = dddEntries.filter(entry => !entry.data.category)
-  .sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
+const basicEntries = dddEntries
+  .filter((entry) => entry.data.category === "basic")
+  .map((entry) => ({
+    title: entry.data.title,
+    slug: entry.slug,
+    description: entry.data.description,
+  }));
+
+const strategicEntries = dddEntries
+  .filter((entry) => entry.data.category === "strategic")
+  .map((entry) => ({
+    title: entry.data.title,
+    slug: entry.slug,
+    description: entry.data.description,
+  }));
+
+const tacticalEntries = dddEntries
+  .filter((entry) => entry.data.category === "tactical")
+  .map((entry) => ({
+    title: entry.data.title,
+    slug: entry.slug,
+    description: entry.data.description,
+  }));
+
+const uncategorizedEntries = dddEntries
+  .filter((entry) => !entry.data.category)
+  .map((entry) => ({
+    title: entry.data.title,
+    slug: entry.slug,
+    description: entry.data.description,
+  }));
 ---
 
 <Layout title="Domain-Driven Design - Архитектурный Гуру">
@@ -25,63 +49,67 @@ const uncategorizedEntries = dddEntries.filter(entry => !entry.data.category)
       богатой доменной модели, отражающей реальные бизнес-процессы.
     </p>
 
-    <section class="category">
-      <h2>Основы DDD</h2>
-      <div class="card-grid">
-        {basicEntries.map(entry => (
-          <a href={`/ddd/${entry.slug}`} class="card">
-            <h3>{entry.data.title}</h3>
-            <p>{entry.data.description}</p>
-          </a>
-        ))}
+    <div class="ddd-overview">
+      <div class="overview-card">
+        <div class="overview-icon">🎯</div>
+        <h3>Ориентация на домен</h3>
+        <p>Фокус на бизнес-домене, а не на технических деталях</p>
       </div>
-    </section>
 
-    <section class="category">
-      <h2>Стратегические паттерны</h2>
-      <p>
-        Паттерны, которые помогают определить границы и взаимоотношения
-        между различными подобластями системы.
-      </p>
-      <div class="card-grid">
-        {strategicEntries.map(entry => (
-          <a href={`/ddd/${entry.slug}`} class="card">
-            <h3>{entry.data.title}</h3>
-            <p>{entry.data.description}</p>
-          </a>
-        ))}
+      <div class="overview-card">
+        <div class="overview-icon">🗣️</div>
+        <h3>Единый язык</h3>
+        <p>Общий язык между разработчиками и экспертами предметной области</p>
       </div>
-    </section>
 
-    <section class="category">
-      <h2>Тактические паттерны</h2>
-      <p>
-        Паттерны, которые предоставляют инструменты для моделирования
-        конкретных элементов внутри ограниченного контекста.
-      </p>
-      <div class="card-grid">
-        {tacticalEntries.map(entry => (
-          <a href={`/ddd/${entry.slug}`} class="card">
-            <h3>{entry.data.title}</h3>
-            <p>{entry.data.description}</p>
-          </a>
-        ))}
+      <div class="overview-card">
+        <div class="overview-icon">🧩</div>
+        <h3>Богатая модель</h3>
+        <p>Создание выразительной модели домена с поведением</p>
       </div>
-    </section>
 
-    {uncategorizedEntries.length > 0 && (
-      <section class="category">
-        <h2>Другие статьи</h2>
-        <div class="card-grid">
-          {uncategorizedEntries.map(entry => (
-            <a href={`/ddd/${entry.slug}`} class="card">
-              <h3>{entry.data.title}</h3>
-              <p>{entry.data.description}</p>
-            </a>
-          ))}
-        </div>
-      </section>
-    )}
+      <div class="overview-card">
+        <div class="overview-icon">🔍</div>
+        <h3>Ограниченные контексты</h3>
+        <p>Разделение сложной системы на управляемые части</p>
+      </div>
+    </div>
+
+    <CategoryCard
+      title="Основы DDD"
+      description="Фундаментальные концепции и принципы Domain-Driven Design"
+      patterns={basicEntries}
+      color="#4caf50"
+      icon="📚"
+    />
+
+    <CategoryCard
+      title="Стратегические паттерны"
+      description="Паттерны, которые помогают определить границы и взаимоотношения между различными подобластями системы"
+      patterns={strategicEntries}
+      color="#2196f3"
+      icon="🌐"
+    />
+
+    <CategoryCard
+      title="Тактические паттерны"
+      description="Паттерны, которые предоставляют инструменты для моделирования конкретных элементов внутри ограниченного контекста"
+      patterns={tacticalEntries}
+      color="#9c27b0"
+      icon="⚙️"
+    />
+
+    {
+      uncategorizedEntries.length > 0 && (
+        <CategoryCard
+          title="Другие статьи"
+          description="Дополнительные материалы по Domain-Driven Design"
+          patterns={uncategorizedEntries}
+          color="#607d8b"
+          icon="📝"
+        />
+      )
+    }
   </main>
 </Layout>
 
@@ -92,43 +120,86 @@ const uncategorizedEntries = dddEntries.filter(entry => !entry.data.category)
     max-width: 1200px;
   }
 
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #333;
+  }
+
   .description {
     font-size: 1.2rem;
     margin-bottom: 2rem;
+    color: #555;
+    line-height: 1.6;
   }
 
-  .category {
-    margin-bottom: 3rem;
-  }
-
-  .card-grid {
+  .ddd-overview {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
-    margin-top: 1rem;
+    margin: 3rem 0;
   }
 
-  .card {
-    border: 1px solid #eaeaea;
-    border-radius: 8px;
+  .overview-card {
     padding: 1.5rem;
-    text-decoration: none;
-    color: inherit;
-    transition: transform 0.2s, box-shadow 0.2s;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    text-align: center;
   }
 
-  .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  .overview-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
   }
 
-  .card h3 {
-    margin-top: 0;
-    font-size: 1.25rem;
+  .overview-card h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.2rem;
+    color: #333;
   }
 
-  .card p {
-    margin-bottom: 0;
+  .overview-card p {
+    margin: 0;
     color: #666;
+    font-size: 0.95rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    h1 {
+      color: #e0e0e0;
+    }
+
+    .description {
+      color: #ccc;
+    }
+
+    .overview-card {
+      background-color: #1e1e2e;
+    }
+
+    .overview-card h3 {
+      color: #e0e0e0;
+    }
+
+    .overview-card p {
+      color: #aaa;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .ddd-overview {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    h1 {
+      font-size: 2.2rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .ddd-overview {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

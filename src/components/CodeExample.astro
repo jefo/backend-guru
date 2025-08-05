@@ -1,0 +1,221 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+  language?: string;
+  basicCode: string;
+  advancedCode?: string;
+  fullCode?: string;
+}
+
+const { title, description, language = "typescript", basicCode, advancedCode, fullCode } = Astro.props;
+---
+
+<div class="code-example">
+  {title && <h4 class="code-title">{title}</h4>}
+  {description && <p class="code-description">{description}</p>}
+
+  <div class="code-tabs">
+    <button class="tab-button active" data-tab="basic">Основной пример</button>
+    {advancedCode && <button class="tab-button" data-tab="advanced">Расширенный</button>}
+    {fullCode && <button class="tab-button" data-tab="full">Полный код</button>}
+  </div>
+
+  <div class="code-content">
+    <div class="tab-content active" id="basic-tab">
+      <div class="code-actions">
+        <button class="copy-button" data-code="basic">Копировать</button>
+      </div>
+      <pre><code class={language}>{basicCode}</code></pre>
+    </div>
+
+    {advancedCode && (
+      <div class="tab-content" id="advanced-tab">
+        <div class="code-actions">
+          <button class="copy-button" data-code="advanced">Копировать</button>
+        </div>
+        <pre><code class={language}>{advancedCode}</code></pre>
+      </div>
+    )}
+
+    {fullCode && (
+      <div class="tab-content" id="full-tab">
+        <div class="code-actions">
+          <button class="copy-button" data-code="full">Копировать</button>
+        </div>
+        <pre><code class={language}>{fullCode}</code></pre>
+      </div>
+    )}
+  </div>
+</div>
+
+<script>
+  // Коды примеров
+  const codes = {
+    basic: document.querySelector('#basic-tab code')?.textContent || '',
+    advanced: document.querySelector('#advanced-tab code')?.textContent || '',
+    full: document.querySelector('#full-tab code')?.textContent || ''
+  };
+
+  // Переключение вкладок
+  document.querySelectorAll('.tab-button').forEach(button => {
+    button.addEventListener('click', () => {
+      // Убираем активный класс со всех кнопок и контента
+      document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+      // Добавляем активный класс на нажатую кнопку и соответствующий контент
+      button.classList.add('active');
+      const tabId = button.getAttribute('data-tab');
+      document.getElementById(`${tabId}-tab`).classList.add('active');
+    });
+  });
+
+  // Копирование кода
+  document.querySelectorAll('.copy-button').forEach(button => {
+    button.addEventListener('click', () => {
+      const codeType = button.getAttribute('data-code');
+      const codeText = codes[codeType];
+
+      navigator.clipboard.writeText(codeText).then(() => {
+        // Изменяем текст кнопки на "Скопировано!"
+        const originalText = button.textContent;
+        button.textContent = 'Скопировано!';
+        button.classList.add('copied');
+
+        // Возвращаем исходный текст через 2 секунды
+        setTimeout(() => {
+          button.textContent = originalText;
+          button.classList.remove('copied');
+        }, 2000);
+      });
+    });
+  });
+</script>
+
+<style>
+  .code-example {
+    margin: 2rem 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    background-color: #f8f9fa;
+  }
+
+  .code-title {
+    margin: 0;
+    padding: 1rem;
+    background-color: #e9ecef;
+    font-size: 1.1rem;
+  }
+
+  .code-description {
+    padding: 0 1rem;
+    margin: 0.5rem 0;
+    color: #6c757d;
+  }
+
+  .code-tabs {
+    display: flex;
+    border-bottom: 1px solid #dee2e6;
+    background-color: #f1f3f5;
+  }
+
+  .tab-button {
+    padding: 0.75rem 1rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+    font-weight: 500;
+  }
+
+  .tab-button:hover {
+    background-color: #e2e6ea;
+  }
+
+  .tab-button.active {
+    background-color: #4a6cf7;
+    color: white;
+  }
+
+  .code-content {
+    position: relative;
+  }
+
+  .tab-content {
+    display: none;
+    position: relative;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  .code-actions {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 10;
+  }
+
+  .copy-button {
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #e0e0e0;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .copy-button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .copy-button.copied {
+    background-color: #4caf50;
+    border-color: #43a047;
+  }
+
+  pre {
+    margin: 0;
+    padding: 1rem;
+    padding-top: 2rem;
+    overflow-x: auto;
+    background-color: #282c34;
+    color: #abb2bf;
+    border-radius: 0 0 8px 8px;
+  }
+
+  code {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .code-example {
+      background-color: #1e1e1e;
+    }
+
+    .code-title {
+      background-color: #252525;
+      color: #e0e0e0;
+    }
+
+    .code-description {
+      color: #adb5bd;
+    }
+
+    .code-tabs {
+      background-color: #2d2d2d;
+      border-bottom: 1px solid #333;
+    }
+
+    .tab-button:hover {
+      background-color: #333;
+    }
+  }
+</style>
