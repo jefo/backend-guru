@@ -1,0 +1,134 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+// Get all DDD entries
+const dddEntries = await getCollection('ddd');
+
+// Group entries by category
+const basicEntries = dddEntries.filter(entry => entry.data.category === 'basic')
+  .sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
+const strategicEntries = dddEntries.filter(entry => entry.data.category === 'strategic')
+  .sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
+const tacticalEntries = dddEntries.filter(entry => entry.data.category === 'tactical')
+  .sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
+const uncategorizedEntries = dddEntries.filter(entry => !entry.data.category)
+  .sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
+---
+
+<Layout title="Domain-Driven Design - Архитектурный Гуру">
+  <main>
+    <h1>Domain-Driven Design (DDD)</h1>
+    <p class="description">
+      Domain-Driven Design — это подход к разработке программного обеспечения,
+      который фокусируется на моделировании сложной бизнес-логики и создании
+      богатой доменной модели, отражающей реальные бизнес-процессы.
+    </p>
+
+    <section class="category">
+      <h2>Основы DDD</h2>
+      <div class="card-grid">
+        {basicEntries.map(entry => (
+          <a href={`/ddd/${entry.slug}`} class="card">
+            <h3>{entry.data.title}</h3>
+            <p>{entry.data.description}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="category">
+      <h2>Стратегические паттерны</h2>
+      <p>
+        Паттерны, которые помогают определить границы и взаимоотношения
+        между различными подобластями системы.
+      </p>
+      <div class="card-grid">
+        {strategicEntries.map(entry => (
+          <a href={`/ddd/${entry.slug}`} class="card">
+            <h3>{entry.data.title}</h3>
+            <p>{entry.data.description}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <section class="category">
+      <h2>Тактические паттерны</h2>
+      <p>
+        Паттерны, которые предоставляют инструменты для моделирования
+        конкретных элементов внутри ограниченного контекста.
+      </p>
+      <div class="card-grid">
+        {tacticalEntries.map(entry => (
+          <a href={`/ddd/${entry.slug}`} class="card">
+            <h3>{entry.data.title}</h3>
+            <p>{entry.data.description}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    {uncategorizedEntries.length > 0 && (
+      <section class="category">
+        <h2>Другие статьи</h2>
+        <div class="card-grid">
+          {uncategorizedEntries.map(entry => (
+            <a href={`/ddd/${entry.slug}`} class="card">
+              <h3>{entry.data.title}</h3>
+              <p>{entry.data.description}</p>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+  </main>
+</Layout>
+
+<style>
+  main {
+    margin: auto;
+    padding: 1rem;
+    max-width: 1200px;
+  }
+
+  .description {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+  }
+
+  .category {
+    margin-bottom: 3rem;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .card {
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+
+  .card h3 {
+    margin-top: 0;
+    font-size: 1.25rem;
+  }
+
+  .card p {
+    margin-bottom: 0;
+    color: #666;
+  }
+</style>

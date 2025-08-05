@@ -1,0 +1,372 @@
+---
+import { getCollection, CollectionEntry } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+  const smellsEntries = await getCollection('smells');
+  return smellsEntries.map(entry => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+type Props = {
+  entry: CollectionEntry<'smells'>;
+};
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+// Get other entries to show in sidebar
+const allSmellsEntries = await getCollection('smells');
+
+// Group entries by severity
+const highSeverity = allSmellsEntries
+  .filter(entry => entry.data.severity === 'high')
+  .sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
+
+const mediumSeverity = allSmellsEntries
+  .filter(entry => entry.data.severity === 'medium')
+  .sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
+
+const lowSeverity = allSmellsEntries
+  .filter(entry => entry.data.severity === 'low')
+  .sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
+
+const uncategorized = allSmellsEntries
+  .filter(entry => !entry.data.severity)
+  .sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
+
+// Get related solutions if available
+const relatedSolutions = entry.data.solutions || [];
+const dddEntries = await getCollection('ddd');
+const solutionEntries = dddEntries.filter(dddEntry =>
+  relatedSolutions.includes(dddEntry.slug)
+);
+---
+
+<Layout title={`${entry.data.title} - Архитектурный Гуру`}>
+  <div class="container">
+    <aside class="sidebar">
+      <nav>
+        {highSeverity.length > 0 && (
+          <div class="sidebar-section">
+            <h3>Высокая критичность</h3>
+            <ul>
+              {highSeverity.map(item => (
+                <li class={item.slug === entry.slug ? 'active' : ''}>
+                  <a href={`/smells/${item.slug}`}>{item.data.title}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {mediumSeverity.length > 0 && (
+          <div class="sidebar-section">
+            <h3>Средняя критичность</h3>
+            <ul>
+              {mediumSeverity.map(item => (
+                <li class={item.slug === entry.slug ? 'active' : ''}>
+                  <a href={`/smells/${item.slug}`}>{item.data.title}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {lowSeverity.length > 0 && (
+          <div class="sidebar-section">
+            <h3>Низкая критичность</h3>
+            <ul>
+              {lowSeverity.map(item => (
+                <li class={item.slug === entry.slug ? 'active' : ''}>
+                  <a href={`/smells/${item.slug}`}>{item.data.title}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {uncategorized.length > 0 && (
+          <div class="sidebar-section">
+            <h3>Другие запахи</h3>
+            <ul>
+              {uncategorized.map(item => (
+                <li class={item.slug === entry.slug ? 'active' : ''}>
+                  <a href={`/smells/${item.slug}`}>{item.data.title}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </nav>
+    </aside>
+
+    <main class="content">
+      <div class="breadcrumbs">
+        <a href="/">Главная</a> &gt;
+        <a href="/smells/">Архитектурные запахи</a> &gt;
+        <span>{entry.data.title}</span>
+      </div>
+
+      <article>
+        {entry.data.severity && (
+          <div class={`severity-badge ${entry.data.severity}`}>
+            {entry.data.severity === 'high' && 'Высокая критичность'}
+            {entry.data.severity === 'medium' && 'Средняя критичность'}
+            {entry.data.severity === 'low' && 'Низкая критичность'}
+          </div>
+        )}
+
+        <Content />
+      </article>
+
+      {solutionEntries.length > 0 && (
+        <div class="related-solutions">
+          <h2>Решения</h2>
+          <div class="solution-cards">
+            {solutionEntries.map(solution => (
+              <a href={`/ddd/${solution.slug}`} class="solution-card">
+                <h3>{solution.data.title}</h3>
+                <p>{solution.data.description}</p>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div class="tags">
+        {entry.data.tags && entry.data.tags.map(tag => (
+          <span class="tag">{tag}</span>
+        ))}
+      </div>
+
+      {entry.data.updatedDate && (
+        <div class="updated-date">
+          Последнее обновление: {entry.data.updatedDate.toLocaleDateString('ru-RU')}
+        </div>
+      )}
+    </main>
+  </div>
+</Layout>
+
+<style>
+  .container {
+    display: flex;
+    max-width: 1400px;
+    margin: 0 auto;
+    gap: 2rem;
+    padding: 1rem;
+  }
+
+  .sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 20px;
+    align-self: flex-start;
+    border-right: 1px solid #eaeaea;
+    padding-right: 1.5rem;
+  }
+
+  .sidebar-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .sidebar-section h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    color: #333;
+  }
+
+  .sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .sidebar li {
+    margin-bottom: 0.5rem;
+  }
+
+  .sidebar a {
+    text-decoration: none;
+    color: #555;
+    display: block;
+    padding: 0.3rem 0;
+    transition: color 0.2s;
+  }
+
+  .sidebar a:hover {
+    color: #0066cc;
+  }
+
+  .sidebar li.active a {
+    color: #0066cc;
+    font-weight: bold;
+  }
+
+  .content {
+    flex: 1;
+    max-width: 800px;
+  }
+
+  .breadcrumbs {
+    margin-bottom: 1.5rem;
+    color: #666;
+    font-size: 0.9rem;
+  }
+
+  .breadcrumbs a {
+    color: #666;
+    text-decoration: none;
+  }
+
+  .breadcrumbs a:hover {
+    text-decoration: underline;
+  }
+
+  .severity-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 2rem;
+    font-weight: bold;
+    color: white;
+  }
+
+  .severity-badge.high {
+    background-color: #e53935;
+  }
+
+  .severity-badge.medium {
+    background-color: #fb8c00;
+  }
+
+  .severity-badge.low {
+    background-color: #43a047;
+  }
+
+  article {
+    line-height: 1.6;
+  }
+
+  article h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  article h2 {
+    font-size: 1.8rem;
+    margin: 2rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eaeaea;
+  }
+
+  article h3 {
+    font-size: 1.4rem;
+    margin: 1.5rem 0 1rem;
+  }
+
+  article pre {
+    background-color: #f6f8fa;
+    border-radius: 6px;
+    padding: 1rem;
+    overflow-x: auto;
+  }
+
+  article code {
+    background-color: rgba(175, 184, 193, 0.2);
+    border-radius: 3px;
+    padding: 0.2em 0.4em;
+    font-family: monospace;
+  }
+
+  article pre code {
+    background-color: transparent;
+    padding: 0;
+  }
+
+  .related-solutions {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eaeaea;
+  }
+
+  .solution-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .solution-card {
+    border: 1px solid #eaeaea;
+    border-radius: 8px;
+    padding: 1rem;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s, box-shadow 0.2s;
+    background-color: #f9f9f9;
+  }
+
+  .solution-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  }
+
+  .solution-card h3 {
+    margin-top: 0;
+    color: #0066cc;
+    font-size: 1.2rem;
+  }
+
+  .solution-card p {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+    color: #555;
+  }
+
+  .tags {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+    color: #666;
+  }
+
+  .updated-date {
+    margin-top: 1rem;
+    color: #666;
+    font-size: 0.9rem;
+    font-style: italic;
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      flex-direction: column;
+    }
+
+    .sidebar {
+      width: 100%;
+      position: static;
+      border-right: none;
+      border-bottom: 1px solid #eaeaea;
+      padding-right: 0;
+      padding-bottom: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .solution-cards {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

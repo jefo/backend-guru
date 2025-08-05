@@ -1,0 +1,121 @@
+---
+title: "Анемичная модель предметной области"
+description: "Архитектурный запах, при котором классы домена содержат только данные, но не содержат бизнес-логику"
+pubDate: 2023-09-15
+severity: "high"
+tags: ["анемичная модель", "антипаттерн", "domain model", "ddd"]
+solutions: ["aggregate", "entity", "value-object"]
+order: 1
+---
+
+# Анемичная модель предметной области
+
+Анемичная модель предметной области (Anemic Domain Model) — это распространенный архитектурный "запах", при котором классы домена содержат только данные (поля и свойства), но не содержат бизнес-логику.
+
+## Симптомы
+
+- Классы домена представляют собой простые контейнеры данных (DTO)
+- Бизнес-логика вынесена в отдельные сервисные классы
+- Объекты домена не инкапсулируют поведение
+- Свойства объектов часто публичны или имеют публичные сеттеры
+- Логика валидации и трансформации данных находится вне объектов домена
+
+## Пример анемичной модели
+
+```csharp
+// Анемичная модель
+public class Order
+{
+    public int Id { get; set; }
+    public List<OrderItem> Items { get; set; }
+    public DateTime OrderDate { get; set; }
+    public decimal TotalAmount { get; set; }
+    public string Status { get; set; }
+}
+
+// Сервис, содержащий всю бизнес-логику
+public class OrderService
+{
+    public void PlaceOrder(Order order) { ... }
+    public void AddItem(Order order, OrderItem item)
+    {
+        order.Items.Add(item);
+        order.TotalAmount = CalculateTotal(order);
+    }
+    public decimal CalculateTotal(Order order) { ... }
+    public void CancelOrder(Order order) { ... }
+}
+```
+
+## Почему это проблема?
+
+1. **Нарушение принципа инкапсуляции**: данные и операции над ними разделены, что увеличивает связанность между компонентами системы.
+
+2. **Сложность поддержки**: при изменении структуры данных необходимо искать и менять все сервисы, которые работают с этой структурой.
+
+3. **Потеря инвариантов**: сложно гарантировать, что объект всегда находится в корректном состоянии.
+
+4. **Непоследовательность**: разные сервисы могут реализовывать одну и ту же логику по-разному.
+
+5. **Ухудшение читаемости кода**: код становится процедурным, а не объектно-ориентированным.
+
+## Как исправить?
+
+Для решения проблемы анемичной модели следует применять принципы Domain-Driven Design:
+
+1. **Перенести бизнес-логику в объекты домена**:
+
+```csharp
+// Богатая доменная модель
+public class Order
+{
+    private List<OrderItem> _items = new List<OrderItem>();
+    
+    public Order(DateTime orderDate)
+    {
+        OrderDate = orderDate;
+        Status = "New";
+    }
+    
+    public int Id { get; private set; }
+    public IReadOnlyList<OrderItem> Items => _items.AsReadOnly();
+    public DateTime OrderDate { get; private set; }
+    public decimal TotalAmount => CalculateTotal();
+    public string Status { get; private set; }
+    
+    public void AddItem(OrderItem item)
+    {
+        if (Status == "Cancelled" || Status == "Completed")
+            throw new InvalidOperationException("Cannot add items to completed or cancelled orders");
+            
+        _items.Add(item);
+    }
+    
+    private decimal CalculateTotal()
+    {
+        return _items.Sum(item => item.Price * item.Quantity);
+    }
+    
+    public void Cancel()
+    {
+        if (Status == "Completed")
+            throw new InvalidOperationException("Cannot cancel completed orders");
+            
+        Status = "Cancelled";
+    }
+}
+```
+
+2. **Использовать паттерны DDD**:
+   - [Агрегаты](/ddd/tactical/aggregate) для определения границ согласованности
+   - [Сущности](/ddd/tactical/entity) и [Объекты-значения](/ddd/tactical/value-object) для моделирования домена
+   - [Репозитории](/ddd/tactical/repository) для абстракции доступа к данным
+
+3. **Применять принцип Tell, Don't Ask**: вместо того, чтобы запрашивать данные у объекта и делать что-то с ними, указывайте объекту, что нужно сделать.
+
+## Связанные концепции
+
+- [Агрегат](/ddd/tactical/aggregate)
+- [Сущность](/ddd/tactical/entity)
+- [Объект-значение](/ddd/tactical/value-object)
+- [Единый язык](/ddd/ubiquitous-language)
