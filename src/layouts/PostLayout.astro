@@ -1,0 +1,377 @@
+---
+import Layout from './Layout.astro';
+import type { CollectionEntry } from 'astro:content';
+
+type Props = {
+  entry: CollectionEntry<'ddd' | 'smells' | 'clean-architecture' | 'system-design'>;
+  Content: any;
+};
+
+const { entry, Content } = Astro.props;
+
+// Generate breadcrumbs based on section and category
+const breadcrumbs = [
+  { label: 'Главная', url: '/' },
+];
+
+// Add section to breadcrumbs
+const sectionLabels = {
+  ddd: 'Domain-Driven Design',
+  smells: 'Архитектурные запахи',
+  'clean-architecture': 'Clean Architecture',
+  'system-design': 'System Design'
+};
+
+if (entry.data.section) {
+  breadcrumbs.push({
+    label: sectionLabels[entry.data.section],
+    url: `/${entry.data.section}/`
+  });
+}
+
+// Add category to breadcrumbs if exists
+if (entry.data.category) {
+  const categoryLabels = {
+    // DDD categories
+    basic: 'Основы',
+    strategic: 'Стратегические паттерны',
+    tactical: 'Тактические паттерны',
+
+    // Smell categories (examples)
+    'data-centric': 'Проблемы с данными',
+    'coupling': 'Проблемы со связанностью',
+    'complexity': 'Проблемы со сложностью',
+  };
+
+  const categoryLabel = categoryLabels[entry.data.category] || entry.data.category;
+
+  // No direct URLs for categories yet, so we don't add a URL
+  breadcrumbs.push({
+    label: categoryLabel,
+    url: null
+  });
+}
+
+// Add current page to breadcrumbs
+breadcrumbs.push({
+  label: entry.data.title,
+  url: null
+});
+
+// Get related content for sidebar
+const hasRelated = entry.data.related && entry.data.related.length > 0;
+const hasSolutions = entry.data.solutions && entry.data.solutions.length > 0;
+
+// Determine if we show severity badge (for smells)
+const showSeverityBadge = entry.data.section === 'smells' && entry.data.severity;
+---
+
+<Layout title={`${entry.data.title} | Архитектурный Гуру`}>
+  <div class="post-container">
+    <header class="post-header">
+      <div class="breadcrumbs">
+        {breadcrumbs.map((crumb, index) => (
+          <>
+            {index > 0 && <span class="breadcrumb-separator">/</span>}
+            {crumb.url ? (
+              <a href={crumb.url}>{crumb.label}</a>
+            ) : (
+              <span class="current-page">{crumb.label}</span>
+            )}
+          </>
+        ))}
+      </div>
+
+      {showSeverityBadge && (
+        <div class={`severity-badge ${entry.data.severity}`}>
+          {entry.data.severity === 'high' && 'Высокая критичность'}
+          {entry.data.severity === 'medium' && 'Средняя критичность'}
+          {entry.data.severity === 'low' && 'Низкая критичность'}
+        </div>
+      )}
+
+      <h1>{entry.data.title}</h1>
+      <p class="description">{entry.data.description}</p>
+    </header>
+
+    <div class="post-layout">
+      <main class="post-content">
+        {entry.data.cover && (
+          <div class="cover-image">
+            <img src={entry.data.cover} alt={entry.data.title} />
+          </div>
+        )}
+
+        <article>
+          <Content />
+        </article>
+
+        <footer class="post-footer">
+          {entry.data.lastUpdated && (
+            <div class="last-updated">
+              Последнее обновление: {entry.data.lastUpdated}
+            </div>
+          )}
+        </footer>
+      </main>
+
+      {(hasRelated || hasSolutions) && (
+        <aside class="post-sidebar">
+          {hasRelated && (
+            <div class="sidebar-section">
+              <h3>Связанные концепции</h3>
+              <ul class="related-list">
+                {entry.data.related.map((item) => (
+                  <li>
+                    <a href={`/${item.includes('-') ? 'smells' : 'ddd'}/${item}`}>
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {hasSolutions && (
+            <div class="sidebar-section">
+              <h3>Решения проблемы</h3>
+              <ul class="solutions-list">
+                {entry.data.solutions.map((item) => (
+                  <li>
+                    <a href={`/ddd/${item}`}>{item}</a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </aside>
+      )}
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .post-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .post-header {
+    margin-bottom: 2rem;
+  }
+
+  .breadcrumbs {
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  .breadcrumb-separator {
+    margin: 0 0.5rem;
+    color: #ccc;
+  }
+
+  .breadcrumbs a {
+    color: #666;
+    text-decoration: none;
+  }
+
+  .breadcrumbs a:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+  }
+
+  .current-page {
+    color: #999;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    line-height: 1.2;
+    margin: 0 0 1rem 0;
+    color: #333;
+  }
+
+  .description {
+    font-size: 1.2rem;
+    color: #555;
+    line-height: 1.5;
+    max-width: 800px;
+  }
+
+  .post-layout {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 3rem;
+  }
+
+  .post-content {
+    min-width: 0; /* Fix for grid overflow */
+  }
+
+  .cover-image {
+    margin-bottom: 2rem;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .cover-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  article {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: #333;
+  }
+
+  article h2 {
+    font-size: 1.8rem;
+    margin: 2rem 0 1rem;
+    color: #333;
+  }
+
+  article h3 {
+    font-size: 1.5rem;
+    margin: 1.75rem 0 1rem;
+    color: #333;
+  }
+
+  article p {
+    margin-bottom: 1.5rem;
+  }
+
+  article ul, article ol {
+    margin-bottom: 1.5rem;
+    padding-left: 1.5rem;
+  }
+
+  article li {
+    margin-bottom: 0.5rem;
+  }
+
+  article pre {
+    background-color: #f6f8fa;
+    border-radius: 6px;
+    padding: 1rem;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+  }
+
+  article code {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.9em;
+  }
+
+  article table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+  }
+
+  article th, article td {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+  }
+
+  article th {
+    background-color: #f6f8fa;
+    font-weight: 600;
+    text-align: left;
+  }
+
+  .post-sidebar {
+    position: sticky;
+    top: 100px;
+    align-self: start;
+  }
+
+  .sidebar-section {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .sidebar-section h3 {
+    font-size: 1.2rem;
+    margin: 0 0 1rem 0;
+    color: #333;
+  }
+
+  .related-list, .solutions-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .related-list li, .solutions-list li {
+    margin-bottom: 0.75rem;
+  }
+
+  .related-list a, .solutions-list a {
+    text-decoration: none;
+    color: var(--primary-color);
+    display: block;
+    padding: 0.5rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+
+  .related-list a:hover, .solutions-list a:hover {
+    background-color: rgba(74, 108, 247, 0.1);
+  }
+
+  .post-footer {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eee;
+  }
+
+  .last-updated {
+    font-size: 0.9rem;
+    color: #666;
+    font-style: italic;
+  }
+
+  .severity-badge {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    color: white;
+  }
+
+  .severity-badge.high {
+    background-color: #e53935;
+  }
+
+  .severity-badge.medium {
+    background-color: #fb8c00;
+  }
+
+  .severity-badge.low {
+    background-color: #43a047;
+  }
+
+  /* Responsive styles */
+  @media (max-width: 900px) {
+    .post-layout {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .post-sidebar {
+      position: static;
+    }
+
+    h1 {
+      font-size: 2rem;
+    }
+  }
+</style>
