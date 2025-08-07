@@ -1,150 +1,182 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
 
 // Get all smells entries
-const smellsEntries = await getCollection('smells');
+const smellsEntries = await getCollection("smells");
 
-// Sort entries by order or severity
+// Sort entries by severity (high to low) and then by title
 const sortedEntries = smellsEntries.sort((a, b) => {
-  // First try to sort by order
-  if (a.data.order !== undefined && b.data.order !== undefined) {
-    return a.data.order - b.data.order;
-  }
-
-  // If order is not available, sort by severity (high to low)
   const severityOrder = { high: 0, medium: 1, low: 2 };
   const aOrder = a.data.severity ? severityOrder[a.data.severity] : 999;
   const bOrder = b.data.severity ? severityOrder[b.data.severity] : 999;
-  return aOrder - bOrder;
+
+  if (aOrder !== bOrder) {
+    return aOrder - bOrder;
+  }
+
+  // If same severity, sort alphabetically by title
+  return a.data.title.localeCompare(b.data.title);
 });
 
 // Group by severity
-const highSeverity = sortedEntries.filter(entry => entry.data.severity === 'high');
-const mediumSeverity = sortedEntries.filter(entry => entry.data.severity === 'medium');
-const lowSeverity = sortedEntries.filter(entry => entry.data.severity === 'low');
-const uncategorized = sortedEntries.filter(entry => !entry.data.severity);
+const highSeverity = sortedEntries.filter(
+  (entry) => entry.data.severity === "high",
+);
+const mediumSeverity = sortedEntries.filter(
+  (entry) => entry.data.severity === "medium",
+);
+const lowSeverity = sortedEntries.filter(
+  (entry) => entry.data.severity === "low",
+);
+const uncategorized = sortedEntries.filter((entry) => !entry.data.severity);
 ---
 
 <Layout title="Архитектурные Запахи - Архитектурный Гуру">
   <main>
     <h1>Архитектурные Запахи</h1>
     <p class="description">
-      Архитектурные запахи — это признаки проблем в архитектуре программного обеспечения,
-      которые могут негативно влиять на качество, поддерживаемость и масштабируемость системы.
-      Понимание этих запахов помогает выявлять и устранять потенциальные проблемы до того,
-      как они перерастут в серьезные технические долги.
+      Архитектурные запахи — это признаки проблем в архитектуре программного
+      обеспечения, которые могут негативно влиять на качество, поддерживаемость
+      и масштабируемость системы. Понимание этих запахов помогает выявлять и
+      устранять потенциальные проблемы до того, как они перерастут в серьезные
+      технические долги.
     </p>
 
-    {highSeverity.length > 0 && (
-      <section class="category severity-high">
-        <h2>Высокая критичность</h2>
-        <p>Эти архитектурные запахи требуют немедленного внимания, так как они значительно влияют на качество системы.</p>
-        <div class="card-grid">
-          {highSeverity.map(entry => (
-            <a href={`/smells/${entry.slug}`} class="card">
-              <div class="card-header">
-                <h3>{entry.data.title}</h3>
-                <span class="severity-badge high">Высокая</span>
-              </div>
-              <p>{entry.data.description}</p>
-              {entry.data.solutions && entry.data.solutions.length > 0 && (
-                <div class="solutions">
-                  <span>Решения:</span>
-                  <ul>
-                    {entry.data.solutions.map(solution => (
-                      <li><a href={`/ddd/${solution}`}>{solution}</a></li>
-                    ))}
-                  </ul>
+    {
+      highSeverity.length > 0 && (
+        <section class="category severity-high">
+          <h2>Высокая критичность</h2>
+          <p>
+            Эти архитектурные запахи требуют немедленного внимания, так как они
+            значительно влияют на качество системы.
+          </p>
+          <div class="card-grid">
+            {highSeverity.map((entry) => (
+              <a href={`/smells/${entry.slug}`} class="card">
+                <div class="card-header">
+                  <h3>{entry.data.title}</h3>
+                  <span class="severity-badge high">Высокая</span>
                 </div>
-              )}
-            </a>
-          ))}
-        </div>
-      </section>
-    )}
+                <p>{entry.data.description}</p>
+                {entry.data.solutions && entry.data.solutions.length > 0 && (
+                  <div class="solutions">
+                    <span>Решения:</span>
+                    <ul>
+                      {entry.data.solutions.map((solution) => (
+                        <li>
+                          <a href={`/ddd/${solution}`}>{solution}</a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </a>
+            ))}
+          </div>
+        </section>
+      )
+    }
 
-    {mediumSeverity.length > 0 && (
-      <section class="category severity-medium">
-        <h2>Средняя критичность</h2>
-        <p>Эти запахи могут не требовать немедленного исправления, но их следует учитывать при планировании рефакторинга.</p>
-        <div class="card-grid">
-          {mediumSeverity.map(entry => (
-            <a href={`/smells/${entry.slug}`} class="card">
-              <div class="card-header">
-                <h3>{entry.data.title}</h3>
-                <span class="severity-badge medium">Средняя</span>
-              </div>
-              <p>{entry.data.description}</p>
-              {entry.data.solutions && entry.data.solutions.length > 0 && (
-                <div class="solutions">
-                  <span>Решения:</span>
-                  <ul>
-                    {entry.data.solutions.map(solution => (
-                      <li><a href={`/ddd/${solution}`}>{solution}</a></li>
-                    ))}
-                  </ul>
+    {
+      mediumSeverity.length > 0 && (
+        <section class="category severity-medium">
+          <h2>Средняя критичность</h2>
+          <p>
+            Эти запахи могут не требовать немедленного исправления, но их
+            следует учитывать при планировании рефакторинга.
+          </p>
+          <div class="card-grid">
+            {mediumSeverity.map((entry) => (
+              <a href={`/smells/${entry.slug}`} class="card">
+                <div class="card-header">
+                  <h3>{entry.data.title}</h3>
+                  <span class="severity-badge medium">Средняя</span>
                 </div>
-              )}
-            </a>
-          ))}
-        </div>
-      </section>
-    )}
+                <p>{entry.data.description}</p>
+                {entry.data.solutions && entry.data.solutions.length > 0 && (
+                  <div class="solutions">
+                    <span>Решения:</span>
+                    <ul>
+                      {entry.data.solutions.map((solution) => (
+                        <li>
+                          <a href={`/ddd/${solution}`}>{solution}</a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </a>
+            ))}
+          </div>
+        </section>
+      )
+    }
 
-    {lowSeverity.length > 0 && (
-      <section class="category severity-low">
-        <h2>Низкая критичность</h2>
-        <p>Эти запахи обычно не вызывают серьезных проблем, но их устранение может улучшить качество кода.</p>
-        <div class="card-grid">
-          {lowSeverity.map(entry => (
-            <a href={`/smells/${entry.slug}`} class="card">
-              <div class="card-header">
-                <h3>{entry.data.title}</h3>
-                <span class="severity-badge low">Низкая</span>
-              </div>
-              <p>{entry.data.description}</p>
-              {entry.data.solutions && entry.data.solutions.length > 0 && (
-                <div class="solutions">
-                  <span>Решения:</span>
-                  <ul>
-                    {entry.data.solutions.map(solution => (
-                      <li><a href={`/ddd/${solution}`}>{solution}</a></li>
-                    ))}
-                  </ul>
+    {
+      lowSeverity.length > 0 && (
+        <section class="category severity-low">
+          <h2>Низкая критичность</h2>
+          <p>
+            Эти запахи обычно не вызывают серьезных проблем, но их устранение
+            может улучшить качество кода.
+          </p>
+          <div class="card-grid">
+            {lowSeverity.map((entry) => (
+              <a href={`/smells/${entry.slug}`} class="card">
+                <div class="card-header">
+                  <h3>{entry.data.title}</h3>
+                  <span class="severity-badge low">Низкая</span>
                 </div>
-              )}
-            </a>
-          ))}
-        </div>
-      </section>
-    )}
+                <p>{entry.data.description}</p>
+                {entry.data.solutions && entry.data.solutions.length > 0 && (
+                  <div class="solutions">
+                    <span>Решения:</span>
+                    <ul>
+                      {entry.data.solutions.map((solution) => (
+                        <li>
+                          <a href={`/ddd/${solution}`}>{solution}</a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </a>
+            ))}
+          </div>
+        </section>
+      )
+    }
 
-    {uncategorized.length > 0 && (
-      <section class="category">
-        <h2>Другие архитектурные запахи</h2>
-        <div class="card-grid">
-          {uncategorized.map(entry => (
-            <a href={`/smells/${entry.slug}`} class="card">
-              <div class="card-header">
-                <h3>{entry.data.title}</h3>
-              </div>
-              <p>{entry.data.description}</p>
-              {entry.data.solutions && entry.data.solutions.length > 0 && (
-                <div class="solutions">
-                  <span>Решения:</span>
-                  <ul>
-                    {entry.data.solutions.map(solution => (
-                      <li><a href={`/ddd/${solution}`}>{solution}</a></li>
-                    ))}
-                  </ul>
+    {
+      uncategorized.length > 0 && (
+        <section class="category">
+          <h2>Другие архитектурные запахи</h2>
+          <div class="card-grid">
+            {uncategorized.map((entry) => (
+              <a href={`/smells/${entry.slug}`} class="card">
+                <div class="card-header">
+                  <h3>{entry.data.title}</h3>
                 </div>
-              )}
-            </a>
-          ))}
-        </div>
-      </section>
-    )}
+                <p>{entry.data.description}</p>
+                {entry.data.solutions && entry.data.solutions.length > 0 && (
+                  <div class="solutions">
+                    <span>Решения:</span>
+                    <ul>
+                      {entry.data.solutions.map((solution) => (
+                        <li>
+                          <a href={`/ddd/${solution}`}>{solution}</a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </a>
+            ))}
+          </div>
+        </section>
+      )
+    }
   </main>
 </Layout>
 
@@ -172,17 +204,27 @@ const uncategorized = sortedEntries.filter(entry => !entry.data.severity);
   }
 
   .card {
-    border: 1px solid #eaeaea;
+    border: 2px solid #eaeaea;
     border-radius: 8px;
     padding: 1.5rem;
     text-decoration: none;
     color: inherit;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background-color: white;
+    position: relative;
+    overflow: hidden;
   }
 
   .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    border-color: #4a6cf7;
+    background-color: #f8fafc;
+  }
+
+  .card:active {
+    transform: translateY(-2px);
   }
 
   .card-header {
@@ -196,10 +238,19 @@ const uncategorized = sortedEntries.filter(entry => !entry.data.severity);
     margin-top: 0;
     font-size: 1.25rem;
     margin-right: 0.5rem;
+    color: #1f2937;
+    font-weight: 600;
+    transition: color 0.2s ease;
+  }
+
+  .card:hover h3 {
+    color: #4a6cf7;
   }
 
   .card p {
     color: #666;
+    line-height: 1.5;
+    margin-bottom: 1rem;
   }
 
   .severity-badge {
@@ -238,7 +289,14 @@ const uncategorized = sortedEntries.filter(entry => !entry.data.severity);
   }
 
   .solutions a {
-    color: #0066cc;
+    color: #4a6cf7;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+  }
+
+  .solutions a:hover {
+    color: #1e40af;
     text-decoration: underline;
   }
 
@@ -252,5 +310,37 @@ const uncategorized = sortedEntries.filter(entry => !entry.data.severity);
 
   .severity-low h2 {
     color: #2e7d32;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .card {
+      background-color: #1e1e2e;
+      border-color: #3e3e5e;
+    }
+
+    .card:hover {
+      background-color: #252836;
+      border-color: #60a5fa;
+    }
+
+    .card h3 {
+      color: #e0e0e0;
+    }
+
+    .card:hover h3 {
+      color: #60a5fa;
+    }
+
+    .card p {
+      color: #a8a8b3;
+    }
+
+    .solutions a {
+      color: #60a5fa;
+    }
+
+    .solutions a:hover {
+      color: #93c5fd;
+    }
   }
 </style>

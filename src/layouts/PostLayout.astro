@@ -1,94 +1,105 @@
 ---
-import Layout from './Layout.astro';
-import type { CollectionEntry } from 'astro:content';
+import Layout from "./Layout.astro";
+import type { CollectionEntry } from "astro:content";
 
 type Props = {
-  entry: CollectionEntry<'ddd' | 'smells' | 'clean-architecture' | 'system-design'>;
+  entry: CollectionEntry<
+    "ddd" | "smells" | "clean-architecture" | "system-design"
+  >;
   Content: any;
 };
 
 const { entry, Content } = Astro.props;
 
 // Generate breadcrumbs based on section and category
-const breadcrumbs = [
-  { label: 'Главная', url: '/' },
+const breadcrumbs: Array<{ label: string; url?: string }> = [
+  { label: "Главная", url: "/" },
 ];
 
 // Add section to breadcrumbs
-const sectionLabels = {
-  ddd: 'Domain-Driven Design',
-  smells: 'Архитектурные запахи',
-  'clean-architecture': 'Clean Architecture',
-  'system-design': 'System Design'
+const sectionLabels: Record<string, string> = {
+  ddd: "Domain-Driven Design",
+  smells: "Архитектурные запахи",
+  "clean-architecture": "Clean Architecture",
+  "system-design": "System Design",
 };
 
 if (entry.data.section) {
   breadcrumbs.push({
     label: sectionLabels[entry.data.section],
-    url: `/${entry.data.section}/`
+    url: `/${entry.data.section}/`,
   });
 }
 
 // Add category to breadcrumbs if exists
 if (entry.data.category) {
-  const categoryLabels = {
+  const categoryLabels: Record<string, string> = {
     // DDD categories
-    basic: 'Основы',
-    strategic: 'Стратегические паттерны',
-    tactical: 'Тактические паттерны',
+    basic: "Основы",
+    strategic: "Стратегические паттерны",
+    tactical: "Тактические паттерны",
 
     // Smell categories (examples)
-    'data-centric': 'Проблемы с данными',
-    'coupling': 'Проблемы со связанностью',
-    'complexity': 'Проблемы со сложностью',
+    "data-centric": "Проблемы с данными",
+    coupling: "Проблемы со связанностью",
+    complexity: "Проблемы со сложностью",
   };
 
-  const categoryLabel = categoryLabels[entry.data.category] || entry.data.category;
+  const categoryLabel =
+    categoryLabels[entry.data.category] || entry.data.category;
 
   // No direct URLs for categories yet, so we don't add a URL
   breadcrumbs.push({
     label: categoryLabel,
-    url: null
   });
 }
 
 // Add current page to breadcrumbs
 breadcrumbs.push({
   label: entry.data.title,
-  url: null
 });
 
 // Get related content for sidebar
 const hasRelated = entry.data.related && entry.data.related.length > 0;
-const hasSolutions = entry.data.solutions && entry.data.solutions.length > 0;
+const hasSolutions =
+  "solutions" in entry.data &&
+  entry.data.solutions &&
+  entry.data.solutions.length > 0;
 
 // Determine if we show severity badge (for smells)
-const showSeverityBadge = entry.data.section === 'smells' && entry.data.severity;
+const showSeverityBadge =
+  entry.data.section === "smells" &&
+  "severity" in entry.data &&
+  entry.data.severity;
 ---
 
 <Layout title={`${entry.data.title} | Архитектурный Гуру`}>
   <div class="post-container">
     <header class="post-header">
       <div class="breadcrumbs">
-        {breadcrumbs.map((crumb, index) => (
-          <>
-            {index > 0 && <span class="breadcrumb-separator">/</span>}
-            {crumb.url ? (
-              <a href={crumb.url}>{crumb.label}</a>
-            ) : (
-              <span class="current-page">{crumb.label}</span>
-            )}
-          </>
-        ))}
+        {
+          breadcrumbs.map((crumb, index) => (
+            <>
+              {index > 0 && <span class="breadcrumb-separator">/</span>}
+              {crumb.url ? (
+                <a href={crumb.url}>{crumb.label}</a>
+              ) : (
+                <span class="current-page">{crumb.label}</span>
+              )}
+            </>
+          ))
+        }
       </div>
 
-      {showSeverityBadge && (
-        <div class={`severity-badge ${entry.data.severity}`}>
-          {entry.data.severity === 'high' && 'Высокая критичность'}
-          {entry.data.severity === 'medium' && 'Средняя критичность'}
-          {entry.data.severity === 'low' && 'Низкая критичность'}
-        </div>
-      )}
+      {
+        showSeverityBadge && "severity" in entry.data && (
+          <div class={`severity-badge ${entry.data.severity}`}>
+            {entry.data.severity === "high" && "Высокая критичность"}
+            {entry.data.severity === "medium" && "Средняя критичность"}
+            {entry.data.severity === "low" && "Низкая критичность"}
+          </div>
+        )
+      }
 
       <h1>{entry.data.title}</h1>
       <p class="description">{entry.data.description}</p>
@@ -96,56 +107,64 @@ const showSeverityBadge = entry.data.section === 'smells' && entry.data.severity
 
     <div class="post-layout">
       <main class="post-content">
-        {entry.data.cover && (
-          <div class="cover-image">
-            <img src={entry.data.cover} alt={entry.data.title} />
-          </div>
-        )}
+        {
+          entry.data.cover && (
+            <div class="cover-image">
+              <img src={entry.data.cover} alt={entry.data.title} />
+            </div>
+          )
+        }
 
         <article>
           <Content />
         </article>
 
         <footer class="post-footer">
-          {entry.data.lastUpdated && (
-            <div class="last-updated">
-              Последнее обновление: {entry.data.lastUpdated}
-            </div>
-          )}
+          {
+            entry.data.lastUpdated && (
+              <div class="last-updated">
+                Последнее обновление: {entry.data.lastUpdated}
+              </div>
+            )
+          }
         </footer>
       </main>
 
-      {(hasRelated || hasSolutions) && (
-        <aside class="post-sidebar">
-          {hasRelated && (
-            <div class="sidebar-section">
-              <h3>Связанные концепции</h3>
-              <ul class="related-list">
-                {entry.data.related.map((item) => (
-                  <li>
-                    <a href={`/${item.includes('-') ? 'smells' : 'ddd'}/${item}`}>
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+      {
+        (hasRelated || hasSolutions) && (
+          <aside class="post-sidebar">
+            {hasRelated && (
+              <div class="sidebar-section">
+                <h3>Связанные концепции</h3>
+                <ul class="related-list">
+                  {entry.data.related?.map((item) => (
+                    <li>
+                      <a
+                        href={`/${item.includes("-") ? "smells" : "ddd"}/${item}`}
+                      >
+                        {item}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
-          {hasSolutions && (
-            <div class="sidebar-section">
-              <h3>Решения проблемы</h3>
-              <ul class="solutions-list">
-                {entry.data.solutions.map((item) => (
-                  <li>
-                    <a href={`/ddd/${item}`}>{item}</a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </aside>
-      )}
+            {hasSolutions && "solutions" in entry.data && (
+              <div class="sidebar-section">
+                <h3>Решения проблемы</h3>
+                <ul class="solutions-list">
+                  {entry.data.solutions?.map((item) => (
+                    <li>
+                      <a href={`/ddd/${item}`}>{item}</a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </aside>
+        )
+      }
     </div>
   </div>
 </Layout>
@@ -244,7 +263,8 @@ const showSeverityBadge = entry.data.section === 'smells' && entry.data.severity
     margin-bottom: 1.5rem;
   }
 
-  article ul, article ol {
+  article ul,
+  article ol {
     margin-bottom: 1.5rem;
     padding-left: 1.5rem;
   }
@@ -262,7 +282,7 @@ const showSeverityBadge = entry.data.section === 'smells' && entry.data.severity
   }
 
   article code {
-    font-family: 'Fira Code', monospace;
+    font-family: "Fira Code", monospace;
     font-size: 0.9em;
   }
 
@@ -272,7 +292,8 @@ const showSeverityBadge = entry.data.section === 'smells' && entry.data.severity
     margin-bottom: 1.5rem;
   }
 
-  article th, article td {
+  article th,
+  article td {
     padding: 0.75rem;
     border: 1px solid #ddd;
   }
@@ -302,17 +323,20 @@ const showSeverityBadge = entry.data.section === 'smells' && entry.data.severity
     color: #333;
   }
 
-  .related-list, .solutions-list {
+  .related-list,
+  .solutions-list {
     list-style: none;
     padding: 0;
     margin: 0;
   }
 
-  .related-list li, .solutions-list li {
+  .related-list li,
+  .solutions-list li {
     margin-bottom: 0.75rem;
   }
 
-  .related-list a, .solutions-list a {
+  .related-list a,
+  .solutions-list a {
     text-decoration: none;
     color: var(--primary-color);
     display: block;
@@ -321,7 +345,8 @@ const showSeverityBadge = entry.data.section === 'smells' && entry.data.severity
     transition: background-color 0.2s;
   }
 
-  .related-list a:hover, .solutions-list a:hover {
+  .related-list a:hover,
+  .solutions-list a:hover {
     background-color: rgba(74, 108, 247, 0.1);
   }
 

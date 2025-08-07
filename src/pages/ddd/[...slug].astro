@@ -1,17 +1,23 @@
 ---
 import { getCollection, type CollectionEntry } from "astro:content";
 import ContentLayout from "../../layouts/ContentLayout.astro";
+import CodeExample from "../../components/CodeExample.astro";
+import AnnotatedCode from "../../components/AnnotatedCode.astro";
+import ResourceLinks from "../../components/ResourceLinks.astro";
+
+// Import components that will be used in MDX files
+export const components = { CodeExample, AnnotatedCode, ResourceLinks };
 
 export async function getStaticPaths() {
-  const smellsEntries = await getCollection("smells");
-  return smellsEntries.map((entry) => ({
+  const dddEntries = await getCollection("ddd");
+  return dddEntries.map((entry) => ({
     params: { slug: entry.slug },
     props: { entry },
   }));
 }
 
 type Props = {
-  entry: CollectionEntry<"smells">;
+  entry: CollectionEntry<"ddd">;
 };
 
 const { entry } = Astro.props;
@@ -20,19 +26,21 @@ const { Content } = await entry.render();
 // Generate breadcrumbs based on section and category
 const breadcrumbs: Array<{ label: string; url?: string }> = [
   { label: "Главная", url: "/" },
-  { label: "Архитектурные запахи", url: "/smells/" },
+  { label: "Domain-Driven Design", url: "/ddd/" },
 ];
 
 // Add category to breadcrumbs if exists
 if (entry.data.category) {
   const categoryLabels = {
-    "data-centric": "Проблемы с данными",
-    complexity: "Проблемы сложности",
+    basic: "Основы",
+    strategic: "Стратегические паттерны",
+    tactical: "Тактические паттерны",
   };
 
   const categoryLabel =
     categoryLabels[entry.data.category] || entry.data.category;
 
+  // No direct URLs for categories yet, so we don't add a URL
   breadcrumbs.push({
     label: categoryLabel,
   });
@@ -46,7 +54,7 @@ breadcrumbs.push({
 
 <ContentLayout
   title={`${entry.data.title} | Архитектурный Гуру`}
-  section="smells"
+  section="ddd"
   currentSlug={entry.slug}
 >
   <div class="breadcrumbs">
@@ -64,19 +72,9 @@ breadcrumbs.push({
     }
   </div>
 
-  {
-    entry.data.severity && (
-      <div class={`severity-badge ${entry.data.severity}`}>
-        {entry.data.severity === "high" && "Высокая критичность"}
-        {entry.data.severity === "medium" && "Средняя критичность"}
-        {entry.data.severity === "low" && "Низкая критичность"}
-      </div>
-    )
-  }
-
-  <header class="smell-header">
+  <header class="pattern-header">
     <h1>{entry.data.title}</h1>
-    <p class="smell-description">{entry.data.description}</p>
+    <p class="pattern-description">{entry.data.description}</p>
   </header>
 
   {
@@ -87,11 +85,11 @@ breadcrumbs.push({
     )
   }
 
-  <article class="smell-article">
-    <Content />
+  <article class="pattern-article">
+    <Content components={components} />
   </article>
 
-  <footer class="smell-footer">
+  <footer class="pattern-footer">
     {
       entry.data.lastUpdated && (
         <div class="last-updated">
@@ -128,29 +126,7 @@ breadcrumbs.push({
     color: #999;
   }
 
-  .severity-badge {
-    display: inline-block;
-    padding: 0.3rem 0.8rem;
-    font-size: 0.9rem;
-    font-weight: 500;
-    border-radius: 4px;
-    margin-bottom: 1rem;
-    color: white;
-  }
-
-  .severity-badge.high {
-    background-color: #e53935;
-  }
-
-  .severity-badge.medium {
-    background-color: #fb8c00;
-  }
-
-  .severity-badge.low {
-    background-color: #43a047;
-  }
-
-  .smell-header {
+  .pattern-header {
     margin-bottom: 2rem;
   }
 
@@ -161,7 +137,7 @@ breadcrumbs.push({
     color: #333;
   }
 
-  .smell-description {
+  .pattern-description {
     font-size: 1.2rem;
     color: #555;
     line-height: 1.5;
@@ -181,13 +157,13 @@ breadcrumbs.push({
     display: block;
   }
 
-  .smell-article {
+  .pattern-article {
     font-size: 1.1rem;
     line-height: 1.7;
     color: #333;
   }
 
-  .smell-footer {
+  .pattern-footer {
     margin-top: 3rem;
     padding-top: 1.5rem;
     border-top: 1px solid #eee;
@@ -205,11 +181,11 @@ breadcrumbs.push({
       color: #e0e0e0;
     }
 
-    .smell-description {
+    .pattern-description {
       color: #ccc;
     }
 
-    .smell-article {
+    .pattern-article {
       color: #e0e0e0;
     }
   }

@@ -13,7 +13,13 @@ interface Props {
   icon?: string;
 }
 
-const { title, description, patterns, color = "#4a6cf7", icon = "🧩" } = Astro.props;
+const {
+  title,
+  description,
+  patterns,
+  color = "#4a6cf7",
+  icon = "🧩",
+} = Astro.props;
 ---
 
 <div class="category-card" style={`--accent-color: ${color};`}>
@@ -25,13 +31,15 @@ const { title, description, patterns, color = "#4a6cf7", icon = "🧩" } = Astro
   <p class="category-description">{description}</p>
 
   <div class="pattern-grid">
-    {patterns.map(pattern => (
-      <a href={`/ddd/${pattern.slug}`} class="pattern-card">
-        <h3 class="pattern-title">{pattern.title}</h3>
-        <p class="pattern-description">{pattern.description}</p>
-        <span class="learn-more">Подробнее →</span>
-      </a>
-    ))}
+    {
+      patterns.map((pattern) => (
+        <a href={`/ddd/${pattern.slug}`} class="pattern-card">
+          <h3 class="pattern-title">{pattern.title}</h3>
+          <p class="pattern-description">{pattern.description}</p>
+          <span class="learn-more">Подробнее →</span>
+        </a>
+      ))
+    }
   </div>
 </div>
 
@@ -81,22 +89,37 @@ const { title, description, patterns, color = "#4a6cf7", icon = "🧩" } = Astro
     background-color: #f8f9fa;
     text-decoration: none;
     color: inherit;
-    transition: transform 0.3s, box-shadow 0.3s;
+    transition: all 0.3s ease;
     height: 100%;
     display: flex;
     flex-direction: column;
+    border: 2px solid transparent;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
   }
 
   .pattern-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    background-color: #f0f4f8;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    background-color: #f1f5f9;
+    border-color: var(--accent-color);
+  }
+
+  .pattern-card:active {
+    transform: translateY(-2px);
   }
 
   .pattern-title {
     font-size: 1.3rem;
     margin: 0 0 0.75rem;
     color: var(--accent-color);
+    font-weight: 600;
+    transition: color 0.2s ease;
+  }
+
+  .pattern-card:hover .pattern-title {
+    color: #1e40af;
   }
 
   .pattern-description {
@@ -109,6 +132,14 @@ const { title, description, patterns, color = "#4a6cf7", icon = "🧩" } = Astro
     align-self: flex-end;
     font-weight: 600;
     color: var(--accent-color);
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+    padding: 0.25rem 0;
+  }
+
+  .pattern-card:hover .learn-more {
+    color: #1e40af;
+    transform: translateX(3px);
   }
 
   @media (prefers-color-scheme: dark) {
@@ -127,10 +158,20 @@ const { title, description, patterns, color = "#4a6cf7", icon = "🧩" } = Astro
 
     .pattern-card {
       background-color: #252836;
+      border-color: transparent;
     }
 
     .pattern-card:hover {
       background-color: #2a2c42;
+      border-color: var(--accent-color);
+    }
+
+    .pattern-card:hover .pattern-title {
+      color: #60a5fa;
+    }
+
+    .pattern-card:hover .learn-more {
+      color: #60a5fa;
     }
 
     .pattern-description {

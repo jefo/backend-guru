@@ -1,0 +1,101 @@
+---
+import Layout from "./Layout.astro";
+import SectionSidebar from "../components/SectionSidebar.astro";
+
+interface Props {
+  title?: string;
+  section: "ddd" | "smells";
+  currentSlug?: string;
+  showSidebar?: boolean;
+}
+
+const {
+  title = "Архитектурный Гуру",
+  section,
+  currentSlug,
+  showSidebar = true,
+} = Astro.props;
+---
+
+<Layout title={title}>
+  <div class="content-layout">
+    <div class="content-container">
+      <main class="content-main">
+        <slot />
+      </main>
+
+      {showSidebar && (
+        <aside class="content-sidebar">
+          <SectionSidebar section={section} currentSlug={currentSlug} />
+        </aside>
+      )}
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .content-layout {
+    min-height: calc(100vh - 160px); /* Account for header and footer */
+    background-color: #f8fafc;
+  }
+
+  .content-container {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    min-height: inherit;
+  }
+
+  .content-main {
+    min-width: 0; /* Prevent grid overflow */
+    background-color: white;
+    border-radius: 8px;
+    padding: 2rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    height: fit-content;
+  }
+
+  .content-sidebar {
+    position: relative;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .content-layout {
+      background-color: #0f1419;
+    }
+
+    .content-main {
+      background-color: #1e1e2e;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  @media (max-width: 1000px) {
+    .content-container {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .content-main {
+      order: 1;
+    }
+
+    .content-sidebar {
+      order: 2;
+      position: static;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .content-container {
+      padding: 1rem;
+    }
+
+    .content-main {
+      padding: 1.5rem;
+    }
+  }
+</style>

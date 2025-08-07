@@ -23,6 +23,9 @@ const dddCollection = defineCollection({
 		published: z.boolean().default(true),
 		lastUpdated: z.string().optional(),
 	}),
+	glob: "**/*.{md,mdx}",
+	extensions: [".md", ".mdx"],
+	flatten: false,
 });
 
 // Define schema for Smells content collection
@@ -50,6 +53,9 @@ const smellsCollection = defineCollection({
 		published: z.boolean().default(true),
 		lastUpdated: z.string().optional(),
 	}),
+	glob: "**/*.{md,mdx}",
+	extensions: [".md", ".mdx"],
+	flatten: false,
 });
 
 // Define schema for Clean Architecture content collection
@@ -75,6 +81,9 @@ const cleanArchitectureCollection = defineCollection({
 		published: z.boolean().default(true),
 		lastUpdated: z.string().optional(),
 	}),
+	glob: "**/*.{md,mdx}",
+	extensions: [".md", ".mdx"],
+	flatten: false,
 });
 
 // Define schema for System Design content collection
@@ -100,6 +109,9 @@ const systemDesignCollection = defineCollection({
 		published: z.boolean().default(true),
 		lastUpdated: z.string().optional(),
 	}),
+	glob: "**/*.{md,mdx}",
+	extensions: [".md", ".mdx"],
+	flatten: false,
 });
 
 // Export collections

@@ -13,32 +13,34 @@ interface Props {
 const { code, language = "typescript", annotations } = Astro.props;
 
 // Разделяем код на строки для добавления номеров строк
-const codeLines = code.trim().split('\n');
+const codeLines = code.trim().split("\n");
 ---
 
 <div class="annotated-code">
   <div class="code-container">
     <div class="code-with-lines">
       <div class="line-numbers">
-        {codeLines.map((_, index) => (
-          <div class="line-number">{index + 1}</div>
-        ))}
+        {
+          codeLines.map((_, index) => (
+            <div class="line-number">{index + 1}</div>
+          ))
+        }
       </div>
       <pre><code class={language}>{code}</code></pre>
     </div>
 
     <div class="annotations">
-      {annotations.map((annotation) => (
-        <div
-          class="annotation"
-          style={`top: ${(annotation.line - 1) * 24}px;`}
-        >
-          <div class="annotation-marker">{annotation.line}</div>
-          <div class="annotation-content">
-            {annotation.text}
+      {
+        annotations.map((annotation) => (
+          <div
+            class="annotation"
+            style={`top: ${(annotation.line - 1) * 24}px;`}
+          >
+            <div class="annotation-marker">{annotation.line}</div>
+            <div class="annotation-content">{annotation.text}</div>
           </div>
-        </div>
-      ))}
+        ))
+      }
     </div>
   </div>
 
@@ -49,25 +51,33 @@ const codeLines = code.trim().split('\n');
 
 <script>
   // Копирование кода
-  const copyButton = document.querySelector('.copy-button');
-  const codeElement = document.querySelector('.annotated-code code');
+  const copyButton = document.querySelector(
+    ".copy-button",
+  ) as HTMLButtonElement | null;
+  const codeElement = document.querySelector(
+    ".annotated-code code",
+  ) as HTMLElement | null;
 
-  copyButton.addEventListener('click', () => {
-    const codeText = codeElement.textContent;
+  if (copyButton && codeElement) {
+    copyButton.addEventListener("click", () => {
+      const codeText = codeElement.textContent;
 
-    navigator.clipboard.writeText(codeText).then(() => {
-      // Изменяем текст кнопки на "Скопировано!"
-      const originalText = copyButton.textContent;
-      copyButton.textContent = 'Скопировано!';
-      copyButton.classList.add('copied');
+      if (codeText) {
+        navigator.clipboard.writeText(codeText).then(() => {
+          // Изменяем текст кнопки на "Скопировано!"
+          const originalText = copyButton.textContent;
+          copyButton.textContent = "Скопировано!";
+          copyButton.classList.add("copied");
 
-      // Возвращаем исходный текст через 2 секунды
-      setTimeout(() => {
-        copyButton.textContent = originalText;
-        copyButton.classList.remove('copied');
-      }, 2000);
+          // Возвращаем исходный текст через 2 секунды
+          setTimeout(() => {
+            copyButton.textContent = originalText;
+            copyButton.classList.remove("copied");
+          }, 2000);
+        });
+      }
     });
-  });
+  }
 </script>
 
 <style>
@@ -99,7 +109,7 @@ const codeLines = code.trim().split('\n');
   }
 
   .line-number {
-    font-family: 'Fira Code', monospace;
+    font-family: "Fira Code", monospace;
     font-size: 0.9rem;
     line-height: 1.5;
   }
@@ -114,7 +124,7 @@ const codeLines = code.trim().split('\n');
   }
 
   code {
-    font-family: 'Fira Code', monospace;
+    font-family: "Fira Code", monospace;
     font-size: 0.9rem;
     line-height: 1.5;
   }

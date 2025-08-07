@@ -8,7 +8,14 @@ interface Props {
   fullCode?: string;
 }
 
-const { title, description, language = "typescript", basicCode, advancedCode, fullCode } = Astro.props;
+const {
+  title,
+  description,
+  language = "typescript",
+  basicCode,
+  advancedCode,
+  fullCode,
+} = Astro.props;
 ---
 
 <div class="code-example">
@@ -17,8 +24,20 @@ const { title, description, language = "typescript", basicCode, advancedCode, fu
 
   <div class="code-tabs">
     <button class="tab-button active" data-tab="basic">Основной пример</button>
-    {advancedCode && <button class="tab-button" data-tab="advanced">Расширенный</button>}
-    {fullCode && <button class="tab-button" data-tab="full">Полный код</button>}
+    {
+      advancedCode && (
+        <button class="tab-button" data-tab="advanced">
+          Расширенный
+        </button>
+      )
+    }
+    {
+      fullCode && (
+        <button class="tab-button" data-tab="full">
+          Полный код
+        </button>
+      )
+    }
   </div>
 
   <div class="code-content">
@@ -29,66 +48,89 @@ const { title, description, language = "typescript", basicCode, advancedCode, fu
       <pre><code class={language}>{basicCode}</code></pre>
     </div>
 
-    {advancedCode && (
-      <div class="tab-content" id="advanced-tab">
-        <div class="code-actions">
-          <button class="copy-button" data-code="advanced">Копировать</button>
+    {
+      advancedCode && (
+        <div class="tab-content" id="advanced-tab">
+          <div class="code-actions">
+            <button class="copy-button" data-code="advanced">
+              Копировать
+            </button>
+          </div>
+          <pre>
+            <code class={language}>{advancedCode}</code>
+          </pre>
         </div>
-        <pre><code class={language}>{advancedCode}</code></pre>
-      </div>
-    )}
+      )
+    }
 
-    {fullCode && (
-      <div class="tab-content" id="full-tab">
-        <div class="code-actions">
-          <button class="copy-button" data-code="full">Копировать</button>
+    {
+      fullCode && (
+        <div class="tab-content" id="full-tab">
+          <div class="code-actions">
+            <button class="copy-button" data-code="full">
+              Копировать
+            </button>
+          </div>
+          <pre>
+            <code class={language}>{fullCode}</code>
+          </pre>
         </div>
-        <pre><code class={language}>{fullCode}</code></pre>
-      </div>
-    )}
+      )
+    }
   </div>
 </div>
 
 <script>
   // Коды примеров
-  const codes = {
-    basic: document.querySelector('#basic-tab code')?.textContent || '',
-    advanced: document.querySelector('#advanced-tab code')?.textContent || '',
-    full: document.querySelector('#full-tab code')?.textContent || ''
+  const codes: Record<string, string> = {
+    basic: document.querySelector("#basic-tab code")?.textContent || "",
+    advanced: document.querySelector("#advanced-tab code")?.textContent || "",
+    full: document.querySelector("#full-tab code")?.textContent || "",
   };
 
   // Переключение вкладок
-  document.querySelectorAll('.tab-button').forEach(button => {
-    button.addEventListener('click', () => {
+  document.querySelectorAll(".tab-button").forEach((button) => {
+    button.addEventListener("click", () => {
       // Убираем активный класс со всех кнопок и контента
-      document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document
+        .querySelectorAll(".tab-button")
+        .forEach((b) => b.classList.remove("active"));
+      document
+        .querySelectorAll(".tab-content")
+        .forEach((c) => c.classList.remove("active"));
 
       // Добавляем активный класс на нажатую кнопку и соответствующий контент
-      button.classList.add('active');
-      const tabId = button.getAttribute('data-tab');
-      document.getElementById(`${tabId}-tab`).classList.add('active');
+      button.classList.add("active");
+      const tabId = button.getAttribute("data-tab");
+      if (tabId) {
+        const tabElement = document.getElementById(`${tabId}-tab`);
+        if (tabElement) {
+          tabElement.classList.add("active");
+        }
+      }
     });
   });
 
   // Копирование кода
-  document.querySelectorAll('.copy-button').forEach(button => {
-    button.addEventListener('click', () => {
-      const codeType = button.getAttribute('data-code');
-      const codeText = codes[codeType];
+  document.querySelectorAll(".copy-button").forEach((button) => {
+    button.addEventListener("click", () => {
+      const codeType = button.getAttribute("data-code");
+      const codeText = codeType ? codes[codeType] : "";
 
-      navigator.clipboard.writeText(codeText).then(() => {
-        // Изменяем текст кнопки на "Скопировано!"
-        const originalText = button.textContent;
-        button.textContent = 'Скопировано!';
-        button.classList.add('copied');
+      if (codeText) {
+        navigator.clipboard.writeText(codeText).then(() => {
+          // Изменяем текст кнопки на "Скопировано!"
+          const originalText = button.textContent;
+          button.textContent = "Скопировано!";
+          button.classList.add("copied");
 
-        // Возвращаем исходный текст через 2 секунды
-        setTimeout(() => {
-          button.textContent = originalText;
-          button.classList.remove('copied');
-        }, 2000);
-      });
+          // Возвращаем исходный текст через 2 секунды
+          setTimeout(() => {
+            button.textContent = originalText;
+            button.classList.remove("copied");
+          }, 2000);
+        });
+      }
     });
   });
 </script>
@@ -126,7 +168,9 @@ const { title, description, language = "typescript", basicCode, advancedCode, fu
     border: none;
     background: none;
     cursor: pointer;
-    transition: background-color 0.2s, color 0.2s;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
     font-weight: 500;
   }
 
@@ -190,7 +234,7 @@ const { title, description, language = "typescript", basicCode, advancedCode, fu
   }
 
   code {
-    font-family: 'Fira Code', monospace;
+    font-family: "Fira Code", monospace;
     font-size: 0.9rem;
     line-height: 1.5;
   }
